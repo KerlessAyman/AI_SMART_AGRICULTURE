@@ -1,0 +1,28 @@
+import requests
+
+BASE_URL = "http://127.0.0.1:8000/notifications/"
+
+notifications = [
+    {"user_id": 1, "type": "disease", "title": "إنذار: فطر بياض زغبي", "title_en": "Alert: Downy Mildew Detected", "message": "تم رصد إصابة بفطر البياض الزغبي في حقل الفلفل الشمالي — تصل نسبة الإصابة 42%.", "message_en": "Downy mildew infection detected in the northern pepper field — infection rate reaching 42%.", "action_url": "/disease"},
+    {"user_id": 1, "type": "disease", "title": "محصول العنب بصحة جيدة", "title_en": "Grape Crop is Healthy", "message": "فحص روتيني لـ 450 صورة — لا توجد أمراض مكتشفة بنسبة ثقة 97%.", "message_en": "Routine scan of 450 images — no diseases detected with 97% confidence.", "action_url": "/reports"},
+    {"user_id": 1, "type": "export", "title": "توصية تصدير جديدة", "title_en": "New Export Recommendation", "message": "محصول البرتقال مؤهل للتصدير للسوق الأوروبية بدرجة جودة A.", "message_en": "Orange harvest is eligible for export to the European market with Grade A quality.", "action_url": "/export"},
+    {"user_id": 1, "type": "export", "title": "شحنة معتمدة", "title_en": "Shipment Approved", "message": "الدفعة EU-2024-847 تحقق جميع معايير الاتحاد الأوروبي وجاهزة للشحن.", "message_en": "Batch EU-2024-847 meets all EU standards and is ready for shipment."},
+    {"user_id": 1, "type": "export", "title": "رفض شحنة — إجراء مطلوب", "title_en": "Shipment Rejected — Action Required", "message": "تم رفض شحنة المانجو من المستورد السعودي بسبب تجاوز حدود المبيدات. يُرجى إعادة الفرز.", "message_en": "Mango shipment rejected by Saudi importer due to exceeded pesticide limits. Re-sorting required.", "action_url": "/export"},
+    {"user_id": 1, "type": "environment", "title": "تنبيه بيئي: رطوبة منخفضة", "title_en": "Environment Alert: Low Soil Moisture", "message": "نسبة رطوبة التربة في الحقل 3 وصلت لمستوى حرج (18%). يُنصح بالري فوراً.", "message_en": "Soil moisture in Field 3 has reached a critical level (18%). Immediate irrigation is advised.", "action_url": "/environment"},
+    {"user_id": 1, "type": "environment", "title": "تحذير موجة حرارة", "title_en": "Heat Wave Warning", "message": "يُتوقع وصول الحرارة لـ 44°C خلال 3 أيام — خطر على المحاصيل الحساسة في دلتا النيل.", "message_en": "Temperatures expected to reach 44°C within 3 days — risk to sensitive crops in the Nile Delta."},
+    {"user_id": 1, "type": "report", "title": "التقرير الأسبوعي جاهز", "title_en": "Weekly Report Ready", "message": "تقرير الأداء الأسبوعي للفترة 16–22 يونيو متاح الآن.", "message_en": "Weekly performance report for June 16–22 is now available.", "action_url": "/reports"},
+    {"user_id": 1, "type": "report", "title": "تقرير جودة شهري", "title_en": "Monthly Quality Report", "message": "تم إنشاء تقرير الجودة لشهر يونيو — معدل النجاح 67% عبر 24 دفعة.", "message_en": "June quality report generated — 67% success rate across 24 batches.", "action_url": "/reports"},
+    {"user_id": 1, "type": "marketplace", "title": "ارتفاع أسعار البرتقال", "title_en": "Orange Prices Rising", "message": "أسعار البرتقال ارتفعت 12% — فرصة شراء قبل موسم التصدير الأوروبي.", "message_en": "Orange prices up 12% — buying opportunity before the European export season.", "action_url": "/marketplace"},
+    {"user_id": 1, "type": "marketplace", "title": "تحذير: فائض في الطماطم", "title_en": "Warning: Tomato Oversupply", "message": "يُتوقع انخفاض أسعار الطماطم 15% خلال أسبوعين بسبب الفائض في المعروض.", "message_en": "Tomato prices expected to drop 15% within two weeks due to supply surplus."},
+    {"user_id": 1, "type": "marketplace", "title": "طلب شراء جديد", "title_en": "New Purchase Request", "message": "مستورد سعودي يطلب 30 طن فراولة درجة A — سعر 22 ج.م/كجم.", "message_en": "Saudi importer requesting 30 tons of Grade A strawberries — price 22 EGP/kg.", "action_url": "/marketplace"},
+    {"user_id": 1, "type": "compliance", "title": "شهادة GlobalG.A.P. مجددة", "title_en": "GlobalG.A.P. Certificate Renewed", "message": "تم تجديد شهادة الامتثال لمزرعة الدلتا — صالحة حتى ديسمبر 2025.", "message_en": "Compliance certificate for Delta Farm renewed — valid until December 2025."},
+    {"user_id": 1, "type": "compliance", "title": "فحص MRL اكتمل", "title_en": "MRL Check Completed", "message": "جميع بقايا المبيدات في دفعة الفراولة ضمن حدود EU MRL. الشحنة جاهزة.", "message_en": "All pesticide residues in the strawberry batch are within EU MRL limits. Shipment is ready.", "action_url": "/export"},
+    {"user_id": 1, "type": "system", "title": "تحديث النظام", "title_en": "System Update", "message": "تم تحديث موديل كشف الأمراض إلى الإصدار 2.1 — دقة 94.3%.", "message_en": "Disease detection model updated to version 2.1 — accuracy 94.3%."},
+    {"user_id": 1, "type": "system", "title": "أداء المنصة: ممتاز", "title_en": "Platform Performance: Excellent", "message": "uptime 99.8% هذا الشهر — 1,240 طلب ذكاء اصطناعي معالج.", "message_en": "99.8% uptime this month — 1,240 AI requests processed."},
+    {"user_id": 1, "type": "user_management", "title": "مستخدم جديد مسجّل", "title_en": "New User Registered", "message": "مصدّر جديد انضم للمنصة: محمد العطار — يحتاج موافقة على البيانات.", "message_en": "New exporter joined the platform: Mohamed Al-Attar — data verification required."},
+    {"user_id": 1, "type": "user_management", "title": "نمو المستخدمين 8%", "title_en": "User Growth 8%", "message": "14 مستخدم جديد هذا الأسبوع — 6 مزارعين، 5 تجار، 3 مصدّرين.", "message_en": "14 new users this week — 6 farmers, 5 traders, 3 exporters."},
+]
+
+for n in notifications:
+    res = requests.post(BASE_URL, json=n)
+    print(res.status_code, n["title"])
